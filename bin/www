@@ -18,28 +18,32 @@ app.set("port", port);
 /**
  * Set up mongoose connection
  */
-const mongoose = require("mongoose");
-const dev_db_url =
-  "mongodb+srv://daniel:nZAPgCqLkBDrdogn@cluster0.tlnaaai.mongodb.net/local_library?retryWrites=true&w=majority";
-const mongoDB = process.env.MONGODB_URI || dev_db_url;
 
-try {
-  connectMongoose();
-} catch (err) {
-  console.error("Failed to connect to MongoDB:", err);
+const mongoose = require("mongoose");
+
+const mongoDB = process.env.MONGODB_URI;
+
+if (!mongoDB) {
+  console.error("MONGODB_URI environment variable is not defined.");
   process.exit(1);
 }
 
+connectMongoose().catch((err) => {
+  console.error("Failed to connect to MongoDB:", err);
+  process.exit(1);
+});
+
 async function connectMongoose() {
   await mongoose.connect(mongoDB);
-  
-  // Add connection error handlers
-  mongoose.connection.on('error', err => {
-    console.error('MongoDB connection error:', err);
+
+  console.log("Connected to MongoDB");
+
+  mongoose.connection.on("error", (err) => {
+    console.error("MongoDB connection error:", err);
   });
-  
-  mongoose.connection.on('disconnected', () => {
-    console.warn('MongoDB disconnected');
+
+  mongoose.connection.on("disconnected", () => {
+    console.warn("MongoDB disconnected");
   });
 }
 
@@ -68,7 +72,6 @@ function onError(error) {
 
   var bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
 
-  // handle specific listen errors with friendly messages
   switch (error.code) {
     case "EACCES":
       console.error(bind + " requires elevated privileges");
@@ -101,12 +104,10 @@ function normalizePort(val) {
   var port = parseInt(val, 10);
 
   if (isNaN(port)) {
-    // named pipe
     return val;
   }
 
   if (port >= 0) {
-    // port number
     return port;
   }
 
